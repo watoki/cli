@@ -2,6 +2,7 @@
 namespace spec\watoki\cli\fixtures;
  
 use watoki\cli\CliApplication;
+use watoki\cli\Parser;
 use watoki\cli\writers\ArrayWriter;
 use watoki\scrut\Fixture;
 
@@ -18,6 +19,9 @@ class CliApplicationFixture extends Fixture {
     /** @var null|\Exception */
     private $caught;
 
+    /** @var Parser */
+    private $parser;
+
     public function givenTheApplication_WithTheBody($className, $body) {
         eval("class $className extends \\watoki\\cli\\CliApplication {
             $body
@@ -27,6 +31,18 @@ class CliApplicationFixture extends Fixture {
 
     protected function setUp() {
         $this->writer = new ArrayWriter();
+
+        $parserClass = 'MyParser';
+        if (!class_exists($parserClass)) {
+            eval("class $parserClass extends \\watoki\\cli\\parsers\\StandardParser {
+                public \$arguments = array();
+
+                protected function readArguments() {
+                    return \$this->arguments;
+                }
+            }");
+        }
+        $this->parser = new $parserClass;
     }
 
     public function whenTryToIRunTheCommand($command) {
@@ -43,10 +59,12 @@ class CliApplicationFixture extends Fixture {
 
     public function whenIRunTheCommand_WithTheArguments($command, $args) {
         $applicationName = $this->applicationName;
+        $this->parser->arguments = array_merge(array($command), $args);
 
         $this->app = new $applicationName();
         $this->app->setStandardWriter($this->writer);
-        $this->app->run(array_merge(array($command), $args));
+        $this->app->setParser($this->parser);
+        $this->app->run();
     }
 
     public function thenThereShouldBeAnErrorContaining($string) {

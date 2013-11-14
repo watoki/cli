@@ -1,6 +1,7 @@
 <?php
 namespace watoki\cli;
 
+use watoki\cli\parsers\StandardParser;
 use watoki\cli\writers\StdOutWriter;
 use watoki\factory\Factory;
 use watoki\factory\filters\DefaultFilterFactory;
@@ -14,10 +15,18 @@ class CliApplication {
     /** @var Writer */
     private $errWriter;
 
+    /** @var Parser */
+    private $parser;
+
+    /** @var Factory */
+    private $factory;
+
     private $exitOnException = false;
 
     function __construct() {
         $this->stdWriter = new StdOutWriter();
+        $this->parser = new StandardParser();
+        $this->factory = new Factory();
     }
 
     public function setStandardWriter(Writer $writer) {
@@ -28,15 +37,13 @@ class CliApplication {
         $this->errWriter = $writer;
     }
 
-    public function run($argv = null) {
-        if ($argv === null) {
-            $argv = isset($_SERVER['argv']) ? array_slice($_SERVER['argv'], 1) : array();
-        }
+    public function setParser(Parser $parser) {
+        $this->parser = $parser;
+    }
 
-        $command = array_shift($argv);
-
+    public function run() {
         try {
-            $this->execute($command, $argv);
+            $this->execute($this->parser->getArguments());
         } catch (\Exception $e) {
             $this->writeException($e);
             if ($this->exitOnException) {
@@ -46,23 +53,55 @@ class CliApplication {
         }
     }
 
-    private function execute($command, $argv) {
+    /**
+     * Lists all available commands with description.
+     *
+     * @param string $commandName
+     */
+    public function doHelp($commandName) {
+
+    }
+
+    private function execute($arguments) {
+        $command = array_shift($arguments);
         $methodName = 'do' . ucfirst($command);
 
         if (!method_exists($this, $methodName)) {
             throw new \Exception("Command [$command] not found. Command 'help' lists all commands.");
         }
 
-        $factory = new Factory();
-        $injector = new Injector($factory);
+        $injector = new Injector($this->factory);
         $method = new \ReflectionMethod($this, $methodName);
 
-        $parsed = $this->parseArguments($argv, $this->getAbbreviationMap($method));
-        $arguments = $injector->injectMethodArguments($method, $parsed, new DefaultFilterFactory($factory));
+        $resolved = $this->resolveFlags($method, $arguments);
+        $arguments = $injector->injectMethodArguments($method, $resolved, new DefaultFilterFactory($this->factory));
         $method->invokeArgs($this, $arguments);
     }
 
-    private function getAbbreviationMap(\ReflectionMethod $method) {
+    private function resolveFlags(\ReflectionMethod $method, $arguments) {
+        $map = $this->getFlagsMap($method);
+        $resolved = array();
+
+        foreach ($arguments as $flag => $value) {
+            if (array_key_exists($flag, $map)) {
+                $key = $map[$flag];
+                if (array_key_exists($key, $arguments)) {
+                    $resolved[$key] = array_merge((array) $arguments[$key], (array) $value);
+                } else {
+                    $resolved[$key] = $value;
+                }
+            } else {
+                $resolved[$flag] = $value;
+            }
+        }
+        return $resolved;
+    }
+
+    /**
+     * @param \ReflectionMethod $method
+     * @return array
+     */
+    private function getFlagsMap(\ReflectionMethod $method) {
         $map = array();
         foreach ($method->getParameters() as $parameter) {
             $matches = array();
@@ -72,80 +111,6 @@ class CliApplication {
             }
         }
         return $map;
-    }
-
-    private function parseArguments(array $argv, $abbreviations) {
-        $args = array();
-        $options = array();
-
-        $lastKey = null;
-        for ($i = 0, $c = count($argv); $i < $c; $i++) {
-            $arg = $argv[$i];
-            if ($arg === '--') {
-                $args[] = implode(' ', array_slice($argv, $i + 1));
-                break;
-            }
-
-            if (substr($arg, 0, 1) == '-' || $lastKey) {
-                $key = $arg;
-                $value = true;
-                $hasValue = false;
-
-                if (($sep = strpos($arg, '=')) !== false) {
-                    $key = substr($arg, 0, $sep);
-                    $value = substr($arg, $sep + 1);
-                    $hasValue = true;
-                }
-
-                if (substr($key, 0, 2) === '--') {
-                    $key = substr($key, 2);
-                    $lastKey = $hasValue ? null : $key;
-                } else if (substr($key, 0, 1) === '-') {
-                    $flags = str_split(substr($key, 1));
-
-                    $last = array_pop($flags);
-                    if (isset($abbreviations[$last])) {
-                        $key = $abbreviations[$last];
-                        $lastKey = $hasValue ? null : $key;
-                    }
-
-                    foreach ($flags as $flag) {
-                        if (isset($abbreviations[$flag])) {
-                            $options[$abbreviations[$flag]] = true;
-                        }
-                    }
-                } else {
-                    $value = $arg;
-                    $key = $lastKey;
-                    $lastKey = null;
-
-                    if (is_array($options[$key])) {
-                        array_pop($options[$key]);
-                    } else {
-                        unset($options[$key]);
-                    }
-                }
-
-                if (array_key_exists($key, $options)) {
-                    if (!is_array($options[$key])) {
-                        $options[$key] = array($options[$key]);
-                    }
-                    $options[$key][] = $value;
-                } else {
-                    $options[$key] = $value;
-                }
-            } else {
-                $args[] = $arg;
-                $lastKey = null;
-            }
-        }
-
-        var_dump($args, $options);
-        return array_merge($args, $options);
-    }
-
-    public function doHelp($commandName) {
-
     }
 
     private function writeException(\Exception $e) {
