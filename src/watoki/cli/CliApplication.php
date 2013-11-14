@@ -63,26 +63,69 @@ class CliApplication {
     }
 
     private function getAbbreviationMap(\ReflectionMethod $method) {
-        return array();
+        $map = array();
+        foreach ($method->getParameters() as $parameter) {
+            $matches = array();
+            $found = preg_match('/@param.+\$?' . $parameter->getName() . '\s+\[(\S)\]/', $method->getDocComment(), $matches);
+            if ($found) {
+                $map[$matches[1]] = $parameter->getName();
+            }
+        }
+        return $map;
     }
 
     private function parseArguments(array $argv, $abbreviations) {
         $args = array();
         $options = array();
 
+        $lastKey = null;
         for ($i = 0, $c = count($argv); $i < $c; $i++) {
             $arg = $argv[$i];
             if ($arg === '--') {
                 $args[] = implode(' ', array_slice($argv, $i + 1));
                 break;
             }
-            if (substr($arg, 0, 2) === '--') {
-                $key = substr($arg, 2);
+
+            if (substr($arg, 0, 1) == '-' || $lastKey) {
+                $key = $arg;
                 $value = true;
+                $hasValue = false;
+
                 if (($sep = strpos($arg, '=')) !== false) {
-                    $key = substr($arg, 2, $sep - 2);
+                    $key = substr($arg, 0, $sep);
                     $value = substr($arg, $sep + 1);
+                    $hasValue = true;
                 }
+
+                if (substr($key, 0, 2) === '--') {
+                    $key = substr($key, 2);
+                    $lastKey = $hasValue ? null : $key;
+                } else if (substr($key, 0, 1) === '-') {
+                    $flags = str_split(substr($key, 1));
+
+                    $last = array_pop($flags);
+                    if (isset($abbreviations[$last])) {
+                        $key = $abbreviations[$last];
+                        $lastKey = $hasValue ? null : $key;
+                    }
+
+                    foreach ($flags as $flag) {
+                        if (isset($abbreviations[$flag])) {
+                            $options[$abbreviations[$flag]] = true;
+                        }
+                    }
+                } else {
+                    $value = $arg;
+                    $key = $lastKey;
+                    $lastKey = null;
+
+                    if (is_array($options[$key])) {
+                        array_pop($options[$key]);
+                    } else {
+                        unset($options[$key]);
+                    }
+                }
+
                 if (array_key_exists($key, $options)) {
                     if (!is_array($options[$key])) {
                         $options[$key] = array($options[$key]);
@@ -91,17 +134,13 @@ class CliApplication {
                 } else {
                     $options[$key] = $value;
                 }
-            } else if (substr($arg, 0, 1) === '-') {
-                foreach (str_split(substr($arg, 1)) as $key) {
-                    if (isset($abbreviations[$key])) {
-                        $options[$abbreviations[$key]] = true;
-                    }
-                }
             } else {
                 $args[] = $arg;
+                $lastKey = null;
             }
         }
 
+        var_dump($args, $options);
         return array_merge($args, $options);
     }
 

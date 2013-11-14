@@ -111,21 +111,43 @@ class RunCommandTest extends Specification {
     }
 
     function testShortOptions() {
-        $this->markTestIncomplete();
         $this->cli->givenTheApplication_WithTheBody('ShortOptions', '
             /**
              * @param $one [o]
              * @param string $two [w]
+             * @param boolean $three [t]
              */
-            function doThat($one, $two) {
+            function doThat($one, $two, $three) {
                 $this->one = $one;
                 $this->two = $two;
+                $this->three = $three;
             }
         ');
-        $this->cli->whenIRunTheCommand_WithTheArguments('that', array('-o=uno', '-w=dos'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('that', array('-o=uno', '-tw=dos'));
 
         $this->cli->then_ShouldBe('one', 'uno');
         $this->cli->then_ShouldBe('two', 'dos');
+        $this->cli->then_ShouldBe('three', true);
+    }
+
+    function testOptionsWithoutEqualSign() {
+        $this->cli->givenTheApplication_WithTheBody('OptionsWithoutEqualSign', '
+            /**
+             * @param $one [o]
+             * @param $two [w]
+             * @param $three [t]
+             */
+            function doThat($one, $two, $three) {
+                $this->one = $one;
+                $this->two = $two;
+                $this->three = $three;
+            }
+        ');
+        $this->cli->whenIRunTheCommand_WithTheArguments('that', array('-t', 'tres', '--two', 'dos', 'uno'));
+
+        $this->cli->then_ShouldBe('one', 'uno');
+        $this->cli->then_ShouldBe('two', 'dos');
+        $this->cli->then_ShouldBe('three', 'tres');
     }
 
 }
