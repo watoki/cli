@@ -8,13 +8,12 @@ use watoki\scrut\Fixture;
 
 class CliApplicationFixture extends Fixture {
 
-    /** @var CliApplication */
-    private $app;
+    protected $command;
 
     /** @var ArrayWriter */
     private $writer;
 
-    private $applicationName = 'watoki\cli\CliApplication';
+    private $commandName = 'watoki\cli\commands\MultiCommand';
 
     /** @var null|\Exception */
     private $caught;
@@ -22,11 +21,11 @@ class CliApplicationFixture extends Fixture {
     /** @var Parser */
     private $parser;
 
-    public function givenTheApplication_WithTheBody($className, $body) {
-        eval("class $className extends \\watoki\\cli\\CliApplication {
+    public function givenTheMultiCommand_WithTheBody($className, $body) {
+        eval("class $className extends \\watoki\\cli\\commands\\MultiCommand {
             $body
         }");
-        $this->applicationName = $className;
+        $this->commandName = $className;
     }
 
     protected function setUp() {
@@ -45,26 +44,29 @@ class CliApplicationFixture extends Fixture {
         $this->parser = new $parserClass;
     }
 
-    public function whenTryToIRunTheCommand($command) {
+    public function whenTryToIRunTheSubCommand($command) {
         try {
-            $this->whenIRunTheCommand_WithTheArguments($command, array());
+            $this->whenIRunTheSubCommand_WithTheArguments($command, array());
         } catch (\Exception $e) {
             $this->caught = $e;
         }
     }
 
-    public function whenIRunTheCommand($command) {
-        $this->whenIRunTheCommand_WithTheArguments($command, array());
+    public function whenIRunTheSubCommand($command) {
+        $this->whenIRunTheSubCommand_WithTheArguments($command, array());
     }
 
-    public function whenIRunTheCommand_WithTheArguments($command, $args) {
-        $applicationName = $this->applicationName;
-        $this->parser->arguments = array_merge(array($command), $args);
+    public function whenIRunTheSubCommand_WithTheArguments($command, $args) {
+        $commandName = $this->commandName;
 
-        $this->app = new $applicationName();
-        $this->app->setStandardWriter($this->writer);
-        $this->app->setParser($this->parser);
-        $this->app->run();
+        $this->command = new $commandName;
+        $app = new CliApplication($this->command);
+        $app->setStandardWriter($this->writer);
+
+        $this->parser->arguments = array_merge(array($command), $args);
+        $app->setParser($this->parser);
+
+        $app->run();
     }
 
     public function thenThereShouldBeAnErrorContaining($string) {
@@ -72,11 +74,15 @@ class CliApplicationFixture extends Fixture {
     }
 
     public function then_ShouldBe($field, $value) {
-        $this->spec->assertEquals($value, $this->app->$field);
+        $this->spec->assertEquals($value, $this->command->$field);
     }
 
     public function then_ShouldBeExactly($field, $value) {
-        $this->spec->assertSame($value, $this->app->$field);
+        $this->spec->assertSame($value, $this->command->$field);
+    }
+
+    public function thenTheOutputShouldBe($string) {
+        $this->spec->assertSame($string, implode("\n", $this->writer->getOutput()));
     }
 }
  
