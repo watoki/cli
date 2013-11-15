@@ -10,18 +10,27 @@ use watoki\scrut\Specification;
 class PrintHelpTest extends Specification {
 
     function testListCommands() {
-        $this->markTestIncomplete();
         $this->cli->givenTheMultiCommand_WithTheBody('CommandWithDescription', '
             /**
-             * Description of that command
+             * A description of that command
+             * can be multi-line.
+             *
+             * Everything after a blank line should not
+             * be included.
              */
             function doThat() {}
+
+            /**
+             * @param $nothing This is not a desription
+             */
+            function doThis() {}
         ');
         $this->cli->whenIRunTheSubCommand('help');
         $this->cli->thenTheOutputShouldBe(
             "Available commands: (use \"help <command>\" for details about a command)\n\n" .
-            "help -- Prints available commands and their usage.\n" .
-            "that -- Description of that command");
+            "help -- Prints available commands and their descriptions.\n" .
+            "that -- A description of that command can be multi-line.\n" .
+            "this");
     }
 
     function testCommandDetails() {

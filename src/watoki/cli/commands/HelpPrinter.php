@@ -45,8 +45,25 @@ class HelpPrinter {
         ksort($commands);
 
         foreach ($commands as $name => $method) {
-            $this->app->getStdWriter()->writeLine($name . ' -- ');
+            $description = $this->getDescription($method);
+            $this->app->getStdWriter()->writeLine($name . ($description ? ' -- ' . $description : ''));
         }
+    }
+
+    private function getDescription(\ReflectionMethod $method) {
+        $comment = $method->getDocComment();
+
+        $description = '';
+
+        foreach (explode("\n", $comment) as $line) {
+            $line = trim(str_replace(array('/*', '/**', '*/', '*'), '', $line));
+            if (!$line && $description || substr($line, 0, 1) == '@') {
+                break;
+            }
+            $description .= ' ' . $line;
+        }
+
+        return trim($description);
     }
 
 }

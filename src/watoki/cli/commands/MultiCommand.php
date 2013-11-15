@@ -19,7 +19,7 @@ class MultiCommand implements Command {
     }
 
     /**
-     * Lists all available commands with description or help for single command.
+     * Prints available commands and their descriptions.
      *
      * @param string $commandName Name of command to display description and arguments of
      * @throws \Exception If the given command does not exist
