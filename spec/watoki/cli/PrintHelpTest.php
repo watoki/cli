@@ -45,8 +45,9 @@ class PrintHelpTest extends Specification {
         ');
         $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
         $this->cli->thenTheOutputShouldBe(
-            "The description of that command.\n\n" .
-            "Everything after a blank line is considered detailed description.");
+            "that: The description of that command.\n\n" .
+            " Everything after a blank line is\n" .
+            " considered detailed description.");
     }
 
     function testCommandDetailsWithoutDescription() {
@@ -54,10 +55,23 @@ class PrintHelpTest extends Specification {
             function doThat() {}
         ');
         $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
-        $this->cli->thenTheOutputShouldBe("(No description available)");
+        $this->cli->thenTheOutputShouldBe("that: (No description available)");
     }
 
-    function testCommandDetailsWithOptions() {
+    function testOptionsWithoutDescriptions() {
+        $this->cli->givenTheMultiCommand_WithTheBody('OptionsWithoutDescriptions', '
+            function doThat($one, $two, $three) {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe(
+            "that: (No description available)\n\n" .
+            "Valid options:\n" .
+            " --one\n" .
+            " --two\n" .
+            " --three");
+    }
+
+    function testOptionsWithDescriptions() {
         $this->markTestIncomplete();
     }
 

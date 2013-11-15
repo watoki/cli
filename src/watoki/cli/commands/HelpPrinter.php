@@ -26,14 +26,25 @@ class HelpPrinter {
             $meta = $this->getCommandMetaData($method);
 
             if (!$meta['description']) {
-                $this->writeLine('(No description available)');
+                $this->writeLine($commandName . ': (No description available)');
             } else {
-                $this->writeLine($meta['description']);
+                $this->writeLine($commandName . ': ' . $meta['description']);
             }
             
             if ($meta['details']) {
                 $this->writeLine('');
-                $this->writeLine($meta['details']);
+                $this->writeLine(' ' . trim(str_replace("\n", "\n ", $meta['details'])));
+            }
+
+            $optionDescriptions = $this->getOptionDescriptions($method);
+
+            if ($optionDescriptions) {
+                $this->writeLine('');
+                $this->writeLine('Valid options:');
+            }
+
+            foreach ($optionDescriptions as $option) {
+                $this->writeLine(' ' . $option);
             }
         } catch (\ReflectionException $e) {
             throw new \Exception("Command [$commandName] does not exist.", 0, $e);
@@ -76,7 +87,7 @@ class HelpPrinter {
 
             if (!$line && $accumulator) {
                 if (!$meta['description']) {
-                    $meta['description'] = $accumulator;
+                    $meta['description'] = str_replace("\n", ' ', $accumulator);
                 } else if (!$meta['details']) {
                     $meta['details'] = $accumulator;
                 }
@@ -84,13 +95,21 @@ class HelpPrinter {
             }
 
             if (substr($line, 0, 1) == '@') {
-                $accumulator = '';
+                break;
             } else {
-                $accumulator = trim($accumulator . ' ' . $line);
+                $accumulator = trim($accumulator . "\n" . $line);
             }
         }
 
         return $meta;
+    }
+
+    private function getOptionDescriptions(\ReflectionMethod $method) {
+        $options = array();
+        foreach ($method->getParameters() as $parameter) {
+            $options[] = '--' . $parameter->getName();
+        }
+        return $options;
     }
 
     private function writeLine($string) {
