@@ -107,7 +107,26 @@ class HelpPrinter {
     private function getOptionDescriptions(\ReflectionMethod $method) {
         $options = array();
         foreach ($method->getParameters() as $parameter) {
-            $options[] = '--' . $parameter->getName();
+            $type = '';
+            $description = '';
+
+            $matches = array();
+            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() .'\s*([^\n]*)/', $method->getDocComment(), $matches);
+            if ($found) {
+                $type = trim($matches[1]);
+                $description = trim($matches[2]);
+            }
+
+            if ($parameter->getClass()) {
+                $type = $parameter->getClass()->getName();
+            }
+
+            $option = '--' . $parameter->getName();
+            if ($type || $description) {
+                $option .= ':' . ($type ? ' (' . $type . ')' : '') . ' ' . $description;
+            }
+
+            $options[] = $option;
         }
         return $options;
     }

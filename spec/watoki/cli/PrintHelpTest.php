@@ -71,15 +71,29 @@ class PrintHelpTest extends Specification {
             " --three");
     }
 
-    function testOptionsWithDescriptions() {
+    function testOptionsWithDescriptionsAndTypes() {
+        $this->cli->givenTheMultiCommand_WithTheBody('OptionsWithDescriptionsAndTypes', '
+            /**
+             * @param $one Just a description
+             * @param boolean $two Description with type
+             * @param $three Class type hint
+             */
+            function doThat($one, $two, \DateTime $three) {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe(
+            "that: (No description available)\n\n" .
+            "Valid options:\n" .
+            " --one: Just a description\n" .
+            " --two: (boolean) Description with type\n" .
+            " --three: (DateTime) Class type hint");
+    }
+
+    function testDefaultOptions() {
         $this->markTestIncomplete();
     }
 
     function testFlagOptions() {
-        $this->markTestIncomplete();
-    }
-
-    function testDefaultOptions() {
         $this->markTestIncomplete();
     }
 
