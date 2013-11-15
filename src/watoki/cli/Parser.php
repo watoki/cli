@@ -5,5 +5,7 @@ interface Parser {
 
     public function getArguments();
 
+    public function getName();
+
 }
  

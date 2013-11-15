@@ -11,7 +11,7 @@ class RunCommandTest extends Specification {
 
     function testNonExistingCommand() {
         $this->cli->whenTryToIRunTheSubCommand('nonExisting');
-        $this->cli->thenThereShouldBeAnErrorContaining("Command [nonExisting] not found. Command 'help' lists all commands.");
+        $this->cli->thenThereShouldBeAnErrorContaining("Command [nonExisting] not found. Use 'php cli.php help' to list all commands.");
     }
 
     function testWithoutArgs() {

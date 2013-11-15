@@ -41,7 +41,7 @@ class HelpPrinter {
     }
 
     public function listCommands() {
-        $this->writeLine('Available commands: (use "help <command>" for details about a command)');
+        $this->writeLine('Available commands: (use "php ' . $this->app->getName() . ' help <command>" for details about a command)');
         $this->writeLine('');
 
         $reflection = new \ReflectionClass($this->object);

@@ -80,5 +80,9 @@ class CliApplication {
         $writer->writeLine('Error [' . get_class($e) . ']: ' . $e->getMessage());
     }
 
+    public function getName() {
+        return $this->parser->getName();
+    }
+
 }
  

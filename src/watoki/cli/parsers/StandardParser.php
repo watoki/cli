@@ -9,6 +9,10 @@ class StandardParser implements Parser {
         return array_slice($_SERVER['argv'], 1);
     }
 
+    public function getName() {
+        return $_SERVER['argv'][0];
+    }
+
     public function getArguments() {
         $argv = $this->readArguments();
 

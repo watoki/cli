@@ -40,7 +40,7 @@ class MultiCommand implements Command {
         $methodName = 'do' . ucfirst($command);
 
         if (!method_exists($this, $methodName)) {
-            throw new \Exception("Command [$command] not found. Command 'help' lists all commands.");
+            throw new \Exception("Command [$command] not found. Use 'php " . $app->getName() . " help' to list all commands.");
         }
 
         $injector = new Injector($this->factory);

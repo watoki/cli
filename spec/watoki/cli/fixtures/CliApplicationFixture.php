@@ -39,6 +39,10 @@ class CliApplicationFixture extends Fixture {
                 protected function readArguments() {
                     return \$this->arguments;
                 }
+
+                public function getName() {
+                    return 'cli.php';
+                }
             }");
         }
         $this->parser = new $parserClass;

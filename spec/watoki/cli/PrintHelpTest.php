@@ -27,7 +27,7 @@ class PrintHelpTest extends Specification {
         ');
         $this->cli->whenIRunTheSubCommand('help');
         $this->cli->thenTheOutputShouldBe(
-            "Available commands: (use \"help <command>\" for details about a command)\n\n" .
+            "Available commands: (use \"php cli.php help <command>\" for details about a command)\n\n" .
             "help -- Prints available commands and their descriptions.\n" .
             "that -- A description of that command can be multi-line.\n" .
             "this");
