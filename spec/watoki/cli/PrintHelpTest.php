@@ -21,7 +21,7 @@ class PrintHelpTest extends Specification {
             function doThat() {}
 
             /**
-             * @param $nothing This is not a desription
+             * @param $nothing This is not a description
              */
             function doThis() {}
         ');
@@ -33,7 +33,31 @@ class PrintHelpTest extends Specification {
             "this");
     }
 
-    function testCommandDetails() {
+    function testCommandDetailsWithDescription() {
+        $this->cli->givenTheMultiCommand_WithTheBody('CommandDetailsWithDescription', '
+            /**
+             * The description of that command.
+             *
+             * Everything after a blank line is
+             * considered detailed description.
+             */
+            function doThat() {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe(
+            "The description of that command.\n\n" .
+            "Everything after a blank line is considered detailed description.");
+    }
+
+    function testCommandDetailsWithoutDescription() {
+        $this->cli->givenTheMultiCommand_WithTheBody('CommandDetailsWithoutDescription', '
+            function doThat() {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe("(No description available)");
+    }
+
+    function testCommandDetailsWithOptions() {
         $this->markTestIncomplete();
     }
 
