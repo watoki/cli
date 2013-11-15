@@ -121,9 +121,13 @@ class HelpPrinter {
                 $type = $parameter->getClass()->getName();
             }
 
+            if ($parameter->isDefaultValueAvailable()) {
+                $type .= '=' . var_export($parameter->getDefaultValue(), true);
+            }
+
             $option = '--' . $parameter->getName();
             if ($type || $description) {
-                $option .= ':' . ($type ? ' (' . $type . ')' : '') . ' ' . $description;
+                $option .= ':' . ($type ? ' (' . $type . ')' : '') . ($description ? ' ' . $description : '');
             }
 
             $options[] = $option;

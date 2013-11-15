@@ -90,7 +90,18 @@ class PrintHelpTest extends Specification {
     }
 
     function testDefaultOptions() {
-        $this->markTestIncomplete();
+        $this->cli->givenTheMultiCommand_WithTheBody('DefaultOptions', '
+            /**
+             * @param boolean $two A description
+             */
+            function doThat($one=null, $two=false) {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe(
+            "that: (No description available)\n\n" .
+            "Valid options:\n" .
+            " --one: (=NULL)\n" .
+            " --two: (boolean=false) A description");
     }
 
     function testFlagOptions() {
