@@ -105,7 +105,17 @@ class PrintHelpTest extends Specification {
     }
 
     function testFlagOptions() {
-        $this->markTestIncomplete();
+        $this->cli->givenTheMultiCommand_WithTheBody('FlagOptions', '
+            /**
+             * @param $one [o] A description
+             */
+            function doThat($one) {}
+        ');
+        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->thenTheOutputShouldBe(
+            "that: (No description available)\n\n" .
+            "Valid options:\n" .
+            " --one|-o: A description");
     }
 
 }

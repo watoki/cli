@@ -109,12 +109,14 @@ class HelpPrinter {
         foreach ($method->getParameters() as $parameter) {
             $type = '';
             $description = '';
+            $flag = '';
 
             $matches = array();
-            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() .'\s*([^\n]*)/', $method->getDocComment(), $matches);
+            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() .'\s*(\[\w\])?([^\n]*)/', $method->getDocComment(), $matches);
             if ($found) {
                 $type = trim($matches[1]);
-                $description = trim($matches[2]);
+                $flag = trim($matches[2], '[]');
+                $description = trim($matches[3]);
             }
 
             if ($parameter->getClass()) {
@@ -126,6 +128,11 @@ class HelpPrinter {
             }
 
             $option = '--' . $parameter->getName();
+
+            if ($flag) {
+                $option .= '|-' . $flag;
+            }
+
             if ($type || $description) {
                 $option .= ':' . ($type ? ' (' . $type . ')' : '') . ($description ? ' ' . $description : '');
             }
