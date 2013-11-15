@@ -14,8 +14,8 @@ class MultiCommand implements Command {
     /** @var \watoki\factory\Factory */
     private $factory;
 
-    function __construct() {
-        $this->factory = new Factory();
+    function __construct(Factory $factory = null) {
+        $this->factory = $factory ? : new Factory();
     }
 
     /**
