@@ -2,52 +2,23 @@
 namespace watoki\cli;
 
 use watoki\cli\parsers\StandardParser;
-use watoki\cli\writers\StdOutWriter;
 
 class CliApplication {
 
-    /** @var Writer */
-    private $stdWriter;
-
-    /** @var Writer */
-    private $errWriter;
+    /** @var Console */
+    private $console;
 
     /** @var Parser */
     private $parser;
 
+    /** @var bool */
     private $exitOnException = false;
 
-    function __construct(Command $command) {
+    function __construct(Command $command, Console $console = null, Parser $parser = null) {
         $this->command = $command;
 
-        $this->stdWriter = new StdOutWriter();
-        $this->parser = new StandardParser();
-    }
-
-    public function setStandardWriter(Writer $writer) {
-        $this->stdWriter = $writer;
-    }
-
-    /**
-     * @return \watoki\cli\Writer
-     */
-    public function getStdWriter() {
-        return $this->stdWriter;
-    }
-
-    public function setErrorWriter(Writer $writer) {
-        $this->errWriter = $writer;
-    }
-
-    /**
-     * @return \watoki\cli\Writer
-     */
-    public function getErrWriter() {
-        return $this->errWriter;
-    }
-
-    public function setParser(Parser $parser) {
-        $this->parser = $parser;
+        $this->console = $console ? : new Console();
+        $this->parser = $parser ? : new StandardParser();
     }
 
     /**
@@ -64,7 +35,7 @@ class CliApplication {
      */
     public function run() {
         try {
-            $this->command->execute($this, $this->parser->getArguments());
+            $this->command->execute($this->console, $this->parser->getArguments());
         } catch (\Exception $e) {
             $this->writeException($e);
             if ($this->exitOnException) {
@@ -75,13 +46,7 @@ class CliApplication {
     }
 
     private function writeException(\Exception $e) {
-        $writer = $this->errWriter ? : $this->stdWriter;
-
-        $writer->writeLine('Error [' . get_class($e) . ']: ' . $e->getMessage());
-    }
-
-    public function getName() {
-        return $this->parser->getName();
+        $this->console->err->writeLine('Error [' . get_class($e) . ']: ' . $e->getMessage());
     }
 
 }

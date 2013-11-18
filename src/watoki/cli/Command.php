@@ -4,11 +4,21 @@ namespace watoki\cli;
 interface Command {
 
     /**
-     * @param CliApplication $application The application that executes the Command
+     * @param Console $console
      * @param array $arguments Arguments as produced by the Parser
      * @return void
      */
-    public function execute(CliApplication $application, array $arguments);
+    public function execute(Console $console, array $arguments);
+
+    /**
+     * @return null|string
+     */
+    public function getDescription();
+
+    /**
+     * @return null|string
+     */
+    public function getHelpText();
 
 }
  

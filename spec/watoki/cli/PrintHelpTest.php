@@ -9,8 +9,15 @@ use watoki\scrut\Specification;
  */
 class PrintHelpTest extends Specification {
 
+    function testDefaultBehaviour() {
+        $this->cli->whenRunTheApplication();
+        $this->cli->thenTheOutputShouldBe(
+            "Available commands: (use \"help <command>\" for details)" . PHP_EOL . PHP_EOL .
+            "help -- Prints available commands and their descriptions.");
+    }
+
     function testListCommands() {
-        $this->cli->givenTheMultiCommand_WithTheBody('CommandWithDescription', '
+        $this->cli->givenTheCommand_WithTheBody('CommandWithDescription1', '
             /**
              * A description of that command
              * can be multi-line.
@@ -18,103 +25,104 @@ class PrintHelpTest extends Specification {
              * Everything after a blank line should not
              * be included.
              */
-            function doThat() {}
-
+            function doExecute() {}
+        ');
+        $this->cli->givenTheCommand_WithTheBody('CommandWithDescription2', '
             /**
              * @param $nothing This is not a description
              */
-            function doThis() {}
+            function doExecute() {}
         ');
-        $this->cli->whenIRunTheSubCommand('help');
+        $this->cli->whenIRunTheCommand('help');
         $this->cli->thenTheOutputShouldBe(
-            "Available commands: (use \"php cli.php help <command>\" for details about a command)\n\n" .
-            "help -- Prints available commands and their descriptions.\n" .
-            "that -- A description of that command can be multi-line.\n" .
-            "this");
+            "Available commands: (use \"help <command>\" for details)" . PHP_EOL . PHP_EOL .
+            "help -- Prints available commands and their descriptions." . PHP_EOL .
+            "CommandWithDescription1 -- A description of that command can be multi-line." . PHP_EOL .
+            "CommandWithDescription2");
     }
 
     function testCommandDetailsWithDescription() {
-        $this->cli->givenTheMultiCommand_WithTheBody('CommandDetailsWithDescription', '
+        $this->cli->givenTheCommand_WithTheBody('CommandDetailsWithDescription', '
             /**
              * The description of that command.
              *
              * Everything after a blank line is
              * considered detailed description.
              */
-            function doThat() {}
+            function doExecute() {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('CommandDetailsWithDescription'));
         $this->cli->thenTheOutputShouldBe(
-            "that: The description of that command.\n\n" .
-            " Everything after a blank line is\n" .
+            "CommandDetailsWithDescription: The description of that command." . PHP_EOL . PHP_EOL .
+            " Everything after a blank line is" . PHP_EOL .
             " considered detailed description.");
     }
 
     function testCommandDetailsWithoutDescription() {
-        $this->cli->givenTheMultiCommand_WithTheBody('CommandDetailsWithoutDescription', '
-            function doThat() {}
+        $this->cli->givenTheCommand_WithTheBody('CommandDetailsWithoutDescription', '
+            function doExecute() {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
-        $this->cli->thenTheOutputShouldBe("that: (No description available)");
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('CommandDetailsWithoutDescription'));
+        $this->cli->thenTheOutputShouldBe("CommandDetailsWithoutDescription: (No description available)");
     }
 
     function testOptionsWithoutDescriptions() {
-        $this->cli->givenTheMultiCommand_WithTheBody('OptionsWithoutDescriptions', '
-            function doThat($one, $two, $three) {}
+        $this->cli->givenTheCommand_WithTheBody('OptionsWithoutDescriptions', '
+            function doExecute($one, $two, $three) {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('OptionsWithoutDescriptions'));
         $this->cli->thenTheOutputShouldBe(
-            "that: (No description available)\n\n" .
-            "Valid options:\n" .
-            " --one\n" .
-            " --two\n" .
+            "OptionsWithoutDescriptions: (No description available)" . PHP_EOL . PHP_EOL .
+            "Valid options:" . PHP_EOL .
+            " --one" . PHP_EOL .
+            " --two" . PHP_EOL .
             " --three");
     }
 
     function testOptionsWithDescriptionsAndTypes() {
-        $this->cli->givenTheMultiCommand_WithTheBody('OptionsWithDescriptionsAndTypes', '
+        $this->cli->givenTheCommand_WithTheBody('OptionsWithDescriptionsAndTypes', '
             /**
              * @param $one Just a description
              * @param boolean $two Description with type
              * @param $three Class type hint
              */
-            function doThat($one, $two, \DateTime $three) {}
+            function doExecute($one, $two, \DateTime $three) {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('OptionsWithDescriptionsAndTypes'));
         $this->cli->thenTheOutputShouldBe(
-            "that: (No description available)\n\n" .
-            "Valid options:\n" .
-            " --one: Just a description\n" .
-            " --two: (boolean) Description with type\n" .
+            "OptionsWithDescriptionsAndTypes: (No description available)" . PHP_EOL . PHP_EOL .
+            "Valid options:" . PHP_EOL .
+            " --one: Just a description" . PHP_EOL .
+            " --two: (boolean) Description with type" . PHP_EOL .
             " --three: (DateTime) Class type hint");
     }
 
     function testDefaultOptions() {
-        $this->cli->givenTheMultiCommand_WithTheBody('DefaultOptions', '
+        $this->cli->givenTheCommand_WithTheBody('DefaultOptions', '
             /**
              * @param boolean $two A description
              */
-            function doThat($one=null, $two=false) {}
+            function doExecute($one=null, $two=false) {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('DefaultOptions'));
         $this->cli->thenTheOutputShouldBe(
-            "that: (No description available)\n\n" .
-            "Valid options:\n" .
-            " --one: (=NULL)\n" .
+            "DefaultOptions: (No description available)" . PHP_EOL . PHP_EOL .
+            "Valid options:" . PHP_EOL .
+            " --one: (=NULL)" . PHP_EOL .
             " --two: (boolean=false) A description");
     }
 
     function testFlagOptions() {
-        $this->cli->givenTheMultiCommand_WithTheBody('FlagOptions', '
+        $this->cli->givenTheCommand_WithTheBody('FlagOptions', '
             /**
              * @param $one [o] A description
              */
-            function doThat($one) {}
+            function doExecute($one) {}
         ');
-        $this->cli->whenIRunTheSubCommand_WithTheArguments('help', array('that'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('FlagOptions'));
         $this->cli->thenTheOutputShouldBe(
-            "that: (No description available)\n\n" .
-            "Valid options:\n" .
+            "FlagOptions: (No description available)" . PHP_EOL . PHP_EOL .
+            "Valid options:" . PHP_EOL .
             " --one|-o: A description");
     }
 
