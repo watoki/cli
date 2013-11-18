@@ -6,6 +6,8 @@ use watoki\cli\writers\StdOutWriter;
 
 class Console {
 
+    public static $CLASS = __CLASS__;
+
     /** @var Writer */
     public $out;
 
