@@ -148,18 +148,17 @@ abstract class DefaultCommand implements Command {
         $method = new \ReflectionMethod($this, $this->getExecutionMethodName());
         $options = array();
         foreach ($method->getParameters() as $parameter) {
-            $type = '';
-            $description = '';
-            $flag = '';
-
             $matches = array();
-            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() . '\s*(\[\w\])?([^\n]*)/', $method->getDocComment(),
+            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() . '[ \t]*(\[\w\])?([^\n]*)/', $method->getDocComment(),
                 $matches);
-            if ($found) {
-                $type = trim($matches[1]);
-                $flag = trim($matches[2], '[]');
-                $description = trim($matches[3]);
+
+            if (!$found) {
+                continue;
             }
+
+            $type = trim($matches[1]);
+            $flag = trim($matches[2], '[]');
+            $description = trim($matches[3]);
 
             if ($parameter->getClass()) {
                 $type = $parameter->getClass()->getName();

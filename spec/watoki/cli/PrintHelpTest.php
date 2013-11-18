@@ -66,8 +66,22 @@ class PrintHelpTest extends Specification {
         $this->cli->thenTheOutputShouldBe("CommandDetailsWithoutDescription: (No description available)");
     }
 
+    function testOptionsWithoutDocComment() {
+        $this->cli->givenTheCommand_WithTheBody('OptionsWithoutDocComment', '
+            function doExecute($one, $two, $three) {}
+        ');
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('OptionsWithoutDocComment'));
+        $this->cli->thenTheOutputShouldBe(
+            "OptionsWithoutDocComment: (No description available)");
+    }
+
     function testOptionsWithoutDescriptions() {
         $this->cli->givenTheCommand_WithTheBody('OptionsWithoutDescriptions', '
+            /**
+             * @param $one
+             * @param $two
+             * @param $three
+             */
             function doExecute($one, $two, $three) {}
         ');
         $this->cli->whenIRunTheCommand_WithTheArguments('help', array('OptionsWithoutDescriptions'));
@@ -100,6 +114,7 @@ class PrintHelpTest extends Specification {
     function testDefaultOptions() {
         $this->cli->givenTheCommand_WithTheBody('DefaultOptions', '
             /**
+             * @param $one
              * @param boolean $two A description
              */
             function doExecute($one=null, $two=false) {}
