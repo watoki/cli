@@ -152,12 +152,12 @@ class RunCommandTest extends Specification {
 
     function testAccessToConsole() {
         $this->cli->givenTheCommand_WithTheBody('AccessToConsole', '
-            function doExecute(\watoki\cli\Console $console) {
-                $this->executed = "yes";
+            function doExecute($one, \watoki\cli\Console $console) {
+                $this->executed = $one;
                 $console->out->writeLine("Hello World");
             }
         ');
-        $this->cli->whenIRunTheCommand('AccessToConsole');
+        $this->cli->whenIRunTheCommand_WithTheArguments('AccessToConsole', array('yes'));
 
         $this->cli->then_ShouldBe('executed', "yes");
         $this->cli->thenTheOutputShouldBe('Hello World');
