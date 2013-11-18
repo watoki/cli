@@ -93,6 +93,21 @@ class PrintHelpTest extends Specification {
             " --three");
     }
 
+    function testUndocumentedOptions() {
+        $this->cli->givenTheCommand_WithTheBody('UndocumentedOptions', '
+            /**
+             * @param $one
+             * @param $three [!]
+             */
+            function doExecute($one, $two, $three) {}
+        ');
+        $this->cli->whenIRunTheCommand_WithTheArguments('help', array('UndocumentedOptions'));
+        $this->cli->thenTheOutputShouldBe(
+            "UndocumentedOptions: (No description available)" . PHP_EOL . PHP_EOL .
+            "Valid options:" . PHP_EOL .
+            " --one");
+    }
+
     function testOptionsWithDescriptionsAndTypes() {
         $this->cli->givenTheCommand_WithTheBody('OptionsWithDescriptionsAndTypes', '
             /**
