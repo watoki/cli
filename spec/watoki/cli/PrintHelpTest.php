@@ -97,7 +97,7 @@ class PrintHelpTest extends Specification {
         $this->cli->givenTheCommand_WithTheBody('UndocumentedOptions', '
             /**
              * @param $one
-             * @param $three [!]
+             * @param $three []
              */
             function doExecute($one, $two, $three) {}
         ');

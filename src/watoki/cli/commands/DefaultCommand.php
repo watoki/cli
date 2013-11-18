@@ -149,20 +149,16 @@ abstract class DefaultCommand implements Command {
         $options = array();
         foreach ($method->getParameters() as $parameter) {
             $matches = array();
-            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() . '[ \t]*(\[\S\])?([^\n]*)/', $method->getDocComment(),
+            $found = preg_match('/@param\s+(\S*\s+)?\$?' . $parameter->getName() . '[ \t]*(\[\S?\])?([^\n]*)/', $method->getDocComment(),
                 $matches);
 
-            if (!$found) {
+            if (!$found || $matches[2] == '[]') {
                 continue;
             }
 
             $type = trim($matches[1]);
             $flag = trim($matches[2], '[]');
             $description = trim($matches[3]);
-
-            if ($flag == '!') {
-                continue;
-            }
 
             if ($parameter->getClass()) {
                 $type = $parameter->getClass()->getName();
