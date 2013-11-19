@@ -25,10 +25,17 @@ class DependentCommandGroup extends CommandGroup {
     }
 
     protected function executeCommand($name, array $arguments, Console $console) {
+        if (array_key_exists($name, $this->queue)) {
+            return;
+        }
+
         foreach ($this->dependencies[$name] as $dependency) {
             $this->executeCommand($dependency['command'], $dependency['arguments'], $console);
         }
+
+        $this->queue[$name] = false;
         parent::executeCommand($name, $arguments, $console);
+        $this->queue[$name] = true;
     }
 
     public function add($name, Command $command) {
