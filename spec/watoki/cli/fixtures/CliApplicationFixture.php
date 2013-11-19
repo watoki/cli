@@ -34,7 +34,11 @@ class CliApplicationFixture extends Fixture {
     }
 
     public function givenTheCommand_DependsOn($name, $command) {
-        $this->commandGroup->addDependency($name, $command);
+        $this->givenTheCommand_DependsOn_WithTheArguments($name, $command, array());
+    }
+
+    public function givenTheCommand_DependsOn_WithTheArguments($name, $command, $args) {
+        $this->commandGroup->addDependency($name, $command, $args);
     }
 
     public function givenTheCommand($name) {

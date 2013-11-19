@@ -29,22 +29,27 @@ class DependentCommandsTest extends Specification {
         $this->cli->givenTheCommand('TreeOne');
         $this->cli->givenTheCommand('TreeTwo');
         $this->cli->givenTheCommand('TreeThree');
-        $this->cli->givenTheCommand('TreeFour');
+        $this->cli->givenTheCommand_WithTheBody('TreeFour', '
+            function doExecute($arg, \watoki\cli\Console $c) {
+                $c->out->writeLine("X:TreeFour($arg)");
+            }');
 
         $this->cli->givenTheCommand_DependsOn('TreeOne', 'TreeTwo');
-        $this->cli->givenTheCommand_DependsOn('TreeOne', 'TreeFour');
+        $this->cli->givenTheCommand_DependsOn('TreeOne', 'TreeThree');
+        $this->cli->givenTheCommand_DependsOn_WithTheArguments('TreeOne', 'TreeFour', array('one'));
 
         $this->cli->givenTheCommand_DependsOn('TreeTwo', 'TreeThree');
-        $this->cli->givenTheCommand_DependsOn('TreeTwo', 'TreeFour');
+        $this->cli->givenTheCommand_DependsOn_WithTheArguments('TreeTwo', 'TreeFour', array('two'));
 
-        $this->cli->givenTheCommand_DependsOn('TreeThree', 'TreeFour');
+        $this->cli->givenTheCommand_DependsOn_WithTheArguments('TreeThree', 'TreeFour', array('two'));
 
         $this->cli->whenIRunTheCommand('TreeOne');
 
         $this->cli->thenTheOutputShouldBe(
-            "X:TreeFour" . PHP_EOL .
+            "X:TreeFour(two)" . PHP_EOL .
             "X:TreeThree" . PHP_EOL .
             "X:TreeTwo" . PHP_EOL .
+            "X:TreeFour(one)" . PHP_EOL .
             "X:TreeOne");
     }
 }

@@ -25,7 +25,8 @@ class DependentCommandGroup extends CommandGroup {
     }
 
     protected function executeCommand($name, array $arguments, Console $console) {
-        if (array_key_exists($name, $this->queue)) {
+        $fingerprint = $this->fingerprint($name, $arguments);
+        if (array_key_exists($fingerprint, $this->queue)) {
             return;
         }
 
@@ -33,9 +34,13 @@ class DependentCommandGroup extends CommandGroup {
             $this->executeCommand($dependency['command'], $dependency['arguments'], $console);
         }
 
-        $this->queue[$name] = false;
+        $this->queue[$fingerprint] = false;
         parent::executeCommand($name, $arguments, $console);
-        $this->queue[$name] = true;
+        $this->queue[$fingerprint] = true;
+    }
+
+    private function fingerprint($name, $arguments) {
+        return json_encode(array($name, $arguments));
     }
 
     public function add($name, Command $command) {
