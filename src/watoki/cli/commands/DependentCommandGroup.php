@@ -10,6 +10,8 @@ class DependentCommandGroup extends CommandGroup {
 
     private $queue = array();
 
+    private $executed = array();
+
     /**
      * @param string $from Name of the depending command
      * @param string $to Name of the dependency command
@@ -21,22 +23,32 @@ class DependentCommandGroup extends CommandGroup {
 
     public function execute(Console $console, array $arguments) {
         $this->queue = array();
+        $this->executed = array();
+
         parent::execute($console, $arguments);
     }
 
     protected function executeCommand($name, array $arguments, Console $console) {
         $fingerprint = $this->fingerprint($name, $arguments);
-        if (array_key_exists($fingerprint, $this->queue)) {
+        if (array_key_exists($fingerprint, $this->executed)) {
             return;
         }
+
+        if (array_key_exists($fingerprint, $this->queue)) {
+            $circle = '[' . implode('] -> [', array_merge(array_values($this->queue), array($name))) . ']';
+            throw new \Exception('Circular dependency detected: ' . $circle);
+        }
+
+        $this->queue[$fingerprint] = $name;
 
         foreach ($this->dependencies[$name] as $dependency) {
             $this->executeCommand($dependency['command'], $dependency['arguments'], $console);
         }
 
-        $this->queue[$fingerprint] = false;
         parent::executeCommand($name, $arguments, $console);
-        $this->queue[$fingerprint] = true;
+
+        array_pop($this->queue);
+        $this->executed[$fingerprint] = true;
     }
 
     private function fingerprint($name, $arguments) {

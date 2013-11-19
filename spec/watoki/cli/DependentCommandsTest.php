@@ -52,5 +52,19 @@ class DependentCommandsTest extends Specification {
             "X:TreeFour(one)" . PHP_EOL .
             "X:TreeOne");
     }
+
+    function testCircles() {
+        $this->cli->givenTheCommand('CircleOne');
+        $this->cli->givenTheCommand('CircleTwo');
+        $this->cli->givenTheCommand('CircleThree');
+
+        $this->cli->givenTheCommand_DependsOn('CircleOne', 'CircleTwo');
+        $this->cli->givenTheCommand_DependsOn('CircleTwo', 'CircleThree');
+        $this->cli->givenTheCommand_DependsOn('CircleThree', 'CircleOne');
+
+        $this->cli->whenTryToIRunTheCommand('CircleOne');
+
+        $this->cli->thenThereShouldBeAnErrorContaining('Circular dependency detected: [CircleOne] -> [CircleTwo] -> [CircleThree] -> [CircleOne]');
+    }
 }
  
