@@ -3,6 +3,7 @@ namespace spec\watoki\cli\fixtures;
  
 use watoki\cli\CliApplication;
 use watoki\cli\commands\CommandGroup;
+use watoki\cli\commands\DependentCommandGroup;
 use watoki\cli\Console;
 use watoki\cli\writers\ArrayWriter;
 use watoki\scrut\Fixture;
@@ -17,7 +18,7 @@ class CliApplicationFixture extends Fixture {
     /** @var null|\Exception */
     private $caught;
 
-    /** @var CommandGroup */
+    /** @var CommandGroup|DependentCommandGroup */
     private $commandGroup;
 
     private $parser;
@@ -26,6 +27,22 @@ class CliApplicationFixture extends Fixture {
         $this->writer = new ArrayWriter();
         $this->commandGroup = new CommandGroup();
         $this->parser = $this->createParser();
+    }
+
+    public function givenADependentCommandGroup() {
+        $this->commandGroup = new DependentCommandGroup();
+    }
+
+    public function givenTheCommand_DependsOn($name, $command) {
+        $this->commandGroup->addDependency($name, $command);
+    }
+
+    public function givenTheCommand($name) {
+        $this->givenTheCommand_WithTheBody($name, '
+            function doExecute(\watoki\cli\Console $c) {
+                $c->out->writeLine("X:' . $name . '");
+            }
+        ');
     }
 
     public function givenTheCommand_WithTheBody($name, $body) {

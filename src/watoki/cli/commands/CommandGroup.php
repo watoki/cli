@@ -78,7 +78,16 @@ class CommandGroup implements Command {
             throw new \Exception("Command [$commandName] not found. Use 'help' to list available commands.");
         }
 
-        $this->commands[$commandName]->execute($console, $arguments);
+        $this->executeCommand($commandName, $arguments, $console);
+    }
+
+    /**
+     * @param string $name
+     * @param array $arguments
+     * @param Console $console
+     */
+    protected function executeCommand($name, array $arguments, Console $console) {
+        $this->commands[$name]->execute($console, $arguments);
     }
 
     /**
