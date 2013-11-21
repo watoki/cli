@@ -26,6 +26,8 @@ class DependentCommandGroup extends CommandGroup {
         $this->executed = array();
 
         parent::execute($console, $arguments);
+
+        $console->out->writeLine('<<<<<<<<< done.');
     }
 
     protected function executeCommand($name, array $arguments, Console $console) {
@@ -43,6 +45,12 @@ class DependentCommandGroup extends CommandGroup {
 
         foreach ($this->dependencies[$name] as $dependency) {
             $this->executeCommand($dependency['command'], $dependency['arguments'], $console);
+        }
+
+        if (count($this->queue) + count($this->executed) > 1) {
+            $console->out->writeLine('');
+            $console->out->writeLine('>>>>>>>>> ' . $name);
+            $console->out->writeLine('');
         }
 
         parent::executeCommand($name, $arguments, $console);
