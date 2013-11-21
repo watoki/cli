@@ -6,7 +6,7 @@ use watoki\cli\Console;
 
 class GenericCommand implements Command {
 
-    /** @var callable */
+    /** @var null|callable */
     private $callback;
 
     private $description;
@@ -14,17 +14,17 @@ class GenericCommand implements Command {
     private $helpText;
 
     /**
-     * @param callable $callback
+     * @param null|callable $callback
      */
-    function __construct($callback) {
+    function __construct($callback = null) {
         $this->callback = $callback;
     }
 
     /**
-     * @param callable $callback
+     * @param null|callable $callback
      * @return GenericCommand
      */
-    public static function build($callback) {
+    public static function build($callback = null) {
         return new GenericCommand($callback);
     }
 
@@ -34,6 +34,10 @@ class GenericCommand implements Command {
      * @return void
      */
     public function execute(Console $console, array $arguments) {
+        if (!$this->callback) {
+            return;
+        }
+
         $callback = $this->callback;
         $callback($console, $arguments);
     }
