@@ -40,7 +40,28 @@ abstract class DefaultCommand implements Command {
 
         $resolved = $this->resolveFlags($method, $arguments);
         $arguments = $injector->injectMethodArguments($method, $resolved, new DefaultFilterFactory($this->factory));
+
+        $this->checkArguments($method, $resolved);
+
         $method->invokeArgs($this, $arguments);
+    }
+
+    private function checkArguments(\ReflectionMethod $method, array $arguments) {
+        $parameters = array();
+        foreach ($method->getParameters() as $parameter) {
+            $parameters[$parameter->getPosition()] = $parameter->getName();
+        }
+
+        foreach ($arguments as $key => $value) {
+            if (!array_key_exists($key, $parameters) && !in_array($key, $parameters)) {
+                if (is_numeric($key)) {
+                    throw new \Exception('Invalid argument: ' . $value);
+                } else {
+                    throw new \Exception('Invalid option: ' . $key);
+                }
+            }
+        }
+
     }
 
     private function resolveFlags(\ReflectionMethod $method, $arguments) {

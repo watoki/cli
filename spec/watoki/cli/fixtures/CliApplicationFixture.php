@@ -59,8 +59,12 @@ class CliApplicationFixture extends Fixture {
     }
 
     public function whenTryToIRunTheCommand($command) {
+        $this->whenTryToIRunTheCommand_WithTheArguments($command, array());
+    }
+
+    public function whenTryToIRunTheCommand_WithTheArguments($command, $args) {
         try {
-            $this->whenIRunTheCommand_WithTheArguments($command, array());
+            $this->whenIRunTheCommand_WithTheArguments($command, $args);
         } catch (\Exception $e) {
             $this->caught = $e;
         }

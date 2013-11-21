@@ -150,17 +150,35 @@ class RunCommandTest extends Specification {
         $this->cli->then_ShouldBe('three', 'tres');
     }
 
-    function testAccessToConsole() {
-        $this->cli->givenTheCommand_WithTheBody('AccessToConsole', '
+    function testInjectConsole() {
+        $this->cli->givenTheCommand_WithTheBody('InjectConsole', '
             function doExecute($one, \watoki\cli\Console $console) {
                 $this->executed = $one;
                 $console->out->writeLine("Hello World");
             }
         ');
-        $this->cli->whenIRunTheCommand_WithTheArguments('AccessToConsole', array('yes'));
+        $this->cli->whenIRunTheCommand_WithTheArguments('InjectConsole', array('yes'));
 
         $this->cli->then_ShouldBe('executed', "yes");
         $this->cli->thenTheOutputShouldBe('Hello World');
+    }
+
+    function testInvalidOption() {
+        $this->cli->givenTheCommand_WithTheBody('InvalidOption', '
+            function doExecute($one) {}
+        ');
+
+        $this->cli->whenTryToIRunTheCommand_WithTheArguments('InvalidOption', array('--one', 'uno', '--two', 'dos'));
+        $this->cli->thenThereShouldBeAnErrorContaining('Invalid option: two');
+    }
+
+    function testInvalidArgument() {
+        $this->cli->givenTheCommand_WithTheBody('InvalidArgument', '
+            function doExecute($one) {}
+        ');
+
+        $this->cli->whenTryToIRunTheCommand_WithTheArguments('InvalidArgument', array('arg1', 'arg2'));
+        $this->cli->thenThereShouldBeAnErrorContaining('Invalid argument: arg2');
     }
 
 }
