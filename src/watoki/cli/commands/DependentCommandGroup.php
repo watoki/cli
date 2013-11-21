@@ -12,6 +12,9 @@ class DependentCommandGroup extends CommandGroup {
 
     private $executed = array();
 
+    /** @var boolean */
+    private $verbose = true;
+
     /**
      * @param string $from Name of the depending command
      * @param string $to Name of the dependency command
@@ -27,7 +30,7 @@ class DependentCommandGroup extends CommandGroup {
 
         parent::execute($console, $arguments);
 
-        if (count($this->executed) > 1) {
+        if ($this->verbose && count($this->executed) > 1) {
             $console->out->writeLine('<<<<<<<<< done.');
         }
     }
@@ -49,7 +52,7 @@ class DependentCommandGroup extends CommandGroup {
             $this->executeCommand($dependency['command'], $dependency['arguments'], $console);
         }
 
-        if (count($this->queue) + count($this->executed) > 1) {
+        if ($this->verbose && count($this->queue) + count($this->executed) > 1) {
             $console->out->writeLine('');
             $console->out->writeLine('>>>>>>>>> ' . $name);
             $console->out->writeLine('');
@@ -68,6 +71,13 @@ class DependentCommandGroup extends CommandGroup {
     public function add($name, Command $command) {
         parent::add($name, $command);
         $this->dependencies[$name] = array();
+    }
+
+    /**
+     * @param boolean $verbose
+     */
+    public function setVerbosity($verbose) {
+        $this->verbose = $verbose;
     }
 
 }

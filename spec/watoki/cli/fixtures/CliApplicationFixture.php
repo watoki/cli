@@ -31,6 +31,7 @@ class CliApplicationFixture extends Fixture {
 
     public function givenADependentCommandGroup() {
         $this->commandGroup = new DependentCommandGroup();
+        $this->commandGroup->setVerbosity(false);
     }
 
     public function givenTheCommand_DependsOn($name, $command) {
