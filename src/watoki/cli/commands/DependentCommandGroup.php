@@ -27,7 +27,9 @@ class DependentCommandGroup extends CommandGroup {
 
         parent::execute($console, $arguments);
 
-        $console->out->writeLine('<<<<<<<<< done.');
+        if (count($this->executed) > 1) {
+            $console->out->writeLine('<<<<<<<<< done.');
+        }
     }
 
     protected function executeCommand($name, array $arguments, Console $console) {
