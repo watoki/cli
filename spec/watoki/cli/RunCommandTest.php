@@ -177,8 +177,8 @@ class RunCommandTest extends Specification {
             function doExecute($one) {}
         ');
 
-        $this->cli->whenTryToIRunTheCommand_WithTheArguments('InvalidArgument', array('arg1', 'arg2'));
-        $this->cli->thenThereShouldBeAnErrorContaining('Invalid argument: arg2');
+        $this->cli->whenTryToIRunTheCommand_WithTheArguments('InvalidArgument', array('--one', 'uno', 'arg1', 'arg2'));
+        $this->cli->thenThereShouldBeAnErrorContaining('Too many arguments: maximum 1, given 2');
     }
 
 }

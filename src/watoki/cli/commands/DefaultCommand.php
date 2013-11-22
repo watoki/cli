@@ -47,18 +47,23 @@ abstract class DefaultCommand implements Command {
     }
 
     private function checkArguments(\ReflectionMethod $method, array $arguments) {
+        if (!$arguments) {
+            return;
+        }
+
         $parameters = array();
         foreach ($method->getParameters() as $parameter) {
             $parameters[$parameter->getPosition()] = $parameter->getName();
         }
 
+        $argumentCount = max(array_keys($arguments)) + 1;
+        if ($argumentCount > count($parameters)) {
+            throw new \Exception("Too many arguments: maximum " . count($parameters) . ", given $argumentCount");
+        }
+
         foreach ($arguments as $key => $value) {
             if (!array_key_exists($key, $parameters) && !in_array($key, $parameters)) {
-                if (is_numeric($key)) {
-                    throw new \Exception('Invalid argument: ' . $value);
-                } else {
-                    throw new \Exception('Invalid option: ' . $key);
-                }
+                throw new \Exception('Invalid option: ' . $key);
             }
         }
 
