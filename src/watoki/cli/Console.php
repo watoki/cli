@@ -23,5 +23,10 @@ class Console {
         $this->err = $err ? : $this->out;
     }
 
+    function ask($question) {
+        $this->out->write($question);
+        return trim($this->in->read());
+    }
+
 }
  
