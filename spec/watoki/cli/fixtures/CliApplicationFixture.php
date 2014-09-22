@@ -23,7 +23,7 @@ class CliApplicationFixture extends Fixture {
 
     private $parser;
 
-    protected function setUp() {
+    public function setUp() {
         $this->writer = new ArrayWriter();
         $this->commandGroup = new CommandGroup();
         $this->parser = $this->createParser();
