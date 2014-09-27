@@ -44,6 +44,9 @@ class CliApplicationFixture extends Fixture {
 
     public function givenTheCommand($name) {
         $this->givenTheCommand_WithTheBody($name, '
+            /**
+             * @param $c <-
+             */
             function doExecute(\watoki\cli\Console $c) {
                 $c->out->writeLine("X:' . $name . '");
             }

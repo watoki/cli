@@ -3,9 +3,10 @@ namespace watoki\cli\commands;
 
 use watoki\cli\Command;
 use watoki\cli\Console;
+use watoki\deli\filter\DefaultFilterRegistry;
 use watoki\factory\Factory;
-use watoki\factory\filters\DefaultFilterFactory;
 use watoki\factory\Injector;
+use watoki\factory\MethodAnalyzer;
 
 abstract class DefaultCommand implements Command {
 
@@ -39,11 +40,26 @@ abstract class DefaultCommand implements Command {
         $this->factory->setSingleton(Console::$CLASS, $console);
 
         $resolved = $this->resolveFlags($method, $arguments);
-        $arguments = $injector->injectMethodArguments($method, $resolved, new DefaultFilterFactory($this->factory));
+        $filtered = $this->filter($method, $resolved);
+        $arguments = $injector->injectMethodArguments($method, $filtered);
 
         $this->checkArguments($method, $resolved);
 
         $method->invokeArgs($this, $arguments);
+    }
+
+    private function filter(\ReflectionMethod $method, $arguments) {
+        $filters = new DefaultFilterRegistry();
+        $analyzer = new MethodAnalyzer($method);
+
+        $args = $analyzer->normalize($arguments);
+        foreach ($args as $name => $value) {
+            $type = $analyzer->getTypeHint($analyzer->getParameter($name));
+            if ($type) {
+                $args[$name] = $filters->getFilter($type)->filter($args[$name]);
+            }
+        }
+        return $args;
     }
 
     private function checkArguments(\ReflectionMethod $method, array $arguments) {

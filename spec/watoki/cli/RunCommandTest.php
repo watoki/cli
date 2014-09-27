@@ -152,6 +152,9 @@ class RunCommandTest extends Specification {
 
     function testInjectConsole() {
         $this->cli->givenTheCommand_WithTheBody('InjectConsole', '
+            /**
+             * @param $console <-
+             */
             function doExecute($one, \watoki\cli\Console $console) {
                 $this->executed = $one;
                 $console->out->writeLine("Hello World");

@@ -30,6 +30,9 @@ class DependentCommandsTest extends Specification {
         $this->cli->givenTheCommand('TreeTwo');
         $this->cli->givenTheCommand('TreeThree');
         $this->cli->givenTheCommand_WithTheBody('TreeFour', '
+            /**
+             * @param $c <-
+             */
             function doExecute($arg, \watoki\cli\Console $c) {
                 $c->out->writeLine("X:TreeFour($arg)");
             }');
