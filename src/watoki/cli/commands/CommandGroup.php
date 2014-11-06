@@ -9,6 +9,10 @@ class CommandGroup implements Command {
     /** @var array|Command[] */
     private $commands = array();
 
+    private $description;
+
+    private $helpText;
+
     function __construct($commands = array()) {
         $this->commands = $commands;
 
@@ -94,12 +98,32 @@ class CommandGroup implements Command {
      * @return null|string
      */
     public function getDescription() {
+        return $this->description;
     }
 
     /**
      * @return null|string
      */
     public function getHelpText() {
+        return $this->helpText;
+    }
+
+    /**
+     * @param mixed $description
+     * @return $this
+     */
+    public function setDescription($description) {
+        $this->description = $description;
+        return $this;
+    }
+
+    /**
+     * @param mixed $helpText
+     * @return $this
+     */
+    public function setHelpText($helpText) {
+        $this->helpText = $helpText;
+        return $this;
     }
 }
  
