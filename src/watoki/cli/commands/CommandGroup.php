@@ -14,7 +14,9 @@ class CommandGroup implements Command {
     private $helpText;
 
     function __construct($commands = array()) {
-        $this->commands = $commands;
+        foreach ($commands as $name => $command) {
+            $this->add($name, $command);
+        }
 
         $that = $this;
         $this->add('help', GenericCommand::build(function (Console $console, array $arguments) use ($that) {
