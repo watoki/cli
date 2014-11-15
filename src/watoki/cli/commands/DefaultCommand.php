@@ -6,7 +6,7 @@ use watoki\cli\Console;
 use watoki\deli\filter\DefaultFilterRegistry;
 use watoki\factory\Factory;
 use watoki\factory\Injector;
-use watoki\factory\MethodAnalyzer;
+use watoki\reflect\MethodAnalyzer;
 
 abstract class DefaultCommand implements Command {
 
