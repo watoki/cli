@@ -6,6 +6,7 @@ use watoki\cli\Console;
 use watoki\deli\filter\DefaultFilterRegistry;
 use watoki\factory\Factory;
 use watoki\factory\Injector;
+use watoki\factory\providers\DefaultProvider;
 use watoki\reflect\MethodAnalyzer;
 
 abstract class DefaultCommand implements Command {
@@ -13,8 +14,16 @@ abstract class DefaultCommand implements Command {
     /** @var \watoki\factory\Factory */
     private $factory;
 
+    /** @var callable */
+    private $parameterInjectionFilter;
+
     function __construct(Factory $factory = null) {
         $this->factory = $factory ? : new Factory();
+
+        $this->parameterInjectionFilter = function (\ReflectionParameter $parameter) {
+            $pattern = '/@param.+\$' . $parameter->getName() . '.+' . DefaultProvider::INJECTION_TOKEN . '/';
+            return preg_match($pattern, $parameter->getDeclaringFunction()->getDocComment());
+        };
     }
 
     protected function getExecutionMethodName() {
@@ -41,7 +50,7 @@ abstract class DefaultCommand implements Command {
 
         $resolved = $this->resolveFlags($method, $arguments);
         $filtered = $this->filter($method, $resolved);
-        $arguments = $injector->injectMethodArguments($method, $filtered);
+        $arguments = $injector->injectMethodArguments($method, $filtered, $this->parameterInjectionFilter);
 
         $this->checkArguments($method, $resolved);
 
@@ -223,6 +232,13 @@ abstract class DefaultCommand implements Command {
             $options[] = $option;
         }
         return $options;
+    }
+
+    /**
+     * @param callable $filter
+     */
+    public function setParameterInjectionFilter($filter) {
+        $this->parameterInjectionFilter = $filter;
     }
 }
  
