@@ -46,7 +46,7 @@ abstract class DefaultCommand implements Command {
             throw new \Exception("Command [" . get_class($this) . "] must implement the method [$methodName].");
         }
 
-        $this->factory->setSingleton(Console::$CLASS, $console);
+        $this->factory->setSingleton($console, Console::$CLASS);
 
         $resolved = $this->resolveFlags($method, $arguments);
         $filtered = $this->filter($method, $resolved);
